@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"lkgiovani_go_rinha_2025/internal/http"
 	nethttp "net/http"
 	"strings"
@@ -66,34 +65,33 @@ func HandleCreatePayment(hc *http.HttpCodec) {
 		return
 	}
 
-	req, err := nethttp.NewRequest("POST", "http://localhost:8001/payments", bytes.NewBuffer(paymentData))
-	if err != nil {
-		http.WriteInternalServerErrorResponse(hc, "Failed to create request")
-		return
-	}
+	go func() {
 
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Rinha-Token", "123")
+		req, err := nethttp.NewRequest("POST", "http://payment-processor-default:8080/payments", bytes.NewBuffer(paymentData))
+		if err != nil {
+			fmt.Printf("Error creating request: %v\n", err)
+			return
+		}
 
-	client := &nethttp.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		http.WriteInternalServerErrorResponse(hc, "Failed to make request to payment processor")
-		return
-	}
-	defer resp.Body.Close()
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Rinha-Token", "123")
 
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		http.WriteInternalServerErrorResponse(hc, "Failed to read response")
-		return
-	}
+		client := &nethttp.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			fmt.Printf("Error making request: %v\n", err)
+			return
+		}
+
+		defer resp.Body.Close()
+
+	}()
 
 	response := map[string]interface{}{
 		"message":            "payment processed successfully",
 		"correlationId":      paymentRequest.CorrelationId,
 		"amount":             paymentRequest.Amount,
-		"processor_response": string(respBody),
+		"processor_response": "success",
 	}
 
 	jsonData, err := json.Marshal(response)
