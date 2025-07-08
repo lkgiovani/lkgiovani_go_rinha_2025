@@ -19,12 +19,8 @@ func HandlePaymentsSummary(hc *http.HttpCodec) {
 
 	path := string(hc.GetParser().Path)
 
-	fmt.Printf("=== DEBUG PAYMENTS SUMMARY ===\n")
-	fmt.Printf("Original path received: %s\n", path)
-
 	if queryStart := strings.Index(path, "?"); queryStart != -1 {
 		queryParams := path[queryStart:]
-		fmt.Printf("Query parameters found: %s\n", queryParams)
 
 		params := strings.Split(queryParams[1:], "&")
 		for _, param := range params {
@@ -33,8 +29,6 @@ func HandlePaymentsSummary(hc *http.HttpCodec) {
 	} else {
 		fmt.Printf("No query parameters found in path\n")
 	}
-
-	fmt.Printf("=== END DEBUG ===\n")
 
 	response := map[string]interface{}{
 		"default": map[string]interface{}{
@@ -94,8 +88,6 @@ func HandleCreatePayment(hc *http.HttpCodec) {
 		http.WriteInternalServerErrorResponse(hc, "Failed to read response")
 		return
 	}
-
-	fmt.Printf("Payment processor response: %s\n", string(respBody))
 
 	response := map[string]interface{}{
 		"message":            "payment processed successfully",
