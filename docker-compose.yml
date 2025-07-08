@@ -1,0 +1,44 @@
+services:
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "9999:80"
+    depends_on:
+      - api1
+      - api2
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 50M
+    networks:
+      - payment-processor
+
+  api1:
+    image: lkgiovani/lkgiovani-portfolio:1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    deploy:
+      resources:
+        limits:
+          cpus: "0.6"
+          memory: 150M
+    networks:
+      - payment-processor
+
+  api2:
+    image: lkgiovani/lkgiovani-portfolio:1
+    deploy:
+      resources:
+        limits:
+          cpus: "0.6"
+          memory: 150M
+    networks:
+      - payment-processor
+
+networks:
+  payment-processor:
+    driver: bridge
